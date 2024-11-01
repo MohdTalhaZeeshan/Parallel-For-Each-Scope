@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="acaa6fa8-839a-4ef2-a9d3-9be03b49d268" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="parallel-for-each-with-error." doc:id="aa7c0984-9b6a-4a9d-a617-a5c65b3a0abe" >
+		<http:listener doc:name="Listener" doc:id="0aa23824-5a83-4dcf-ae8f-55026f24dd21" config-ref="HTTP_Listener_config" path="test2"/>
+		<set-payload value="#[['a',1,2,4,5]]" doc:name="Set Payload" doc:id="e4d6af75-1b0b-48bb-b82f-d034b1c5f70d" />
+		<parallel-foreach doc:name="Parallel For Each" doc:id="88d56f59-f5a2-44f0-86fc-323e1998ab90" >
+			<set-payload value="#[payload * 10]" doc:name="Set Payload" doc:id="26311566-2f4c-46ef-93a2-e5b2b8abec50" />
+		</parallel-foreach>
+		<ee:transform doc:name="Transform Message" doc:id="b8092ff1-c658-403c-a65c-c2aa7267b85c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="parallel-for-each-without-errors." doc:id="f8788327-f0a4-4f6f-929f-2a8fc8c86d77" >
+		<http:listener doc:name="Listener" doc:id="e2c0d159-fbc7-49aa-9474-bbc934dd8e55" config-ref="HTTP_Listener_config" path="test3"/>
+		<set-payload value="#[[1,2,3,4,5]]" doc:name="Set Payload" doc:id="6f21a66a-9d82-4a45-a296-91110fd529e4" />
+		<parallel-foreach doc:name="Parallel For Each" doc:id="cfa1b613-48b3-4c79-b906-8e26eb767961" >
+			<set-payload value="#[payload * 10]" doc:name="Set Payload" doc:id="a38c80f7-2d97-47a8-8e55-41eacb879dd9" />
+		</parallel-foreach>
+		<ee:transform doc:name="Transform Message" doc:id="457c95b9-9c2b-489b-a1de-bac2a0166249" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="parallel-for-eachFlow" doc:id="3c41586c-37b8-4679-838a-0df4d202cf50" >
+		<http:listener doc:name="Listener" doc:id="60531853-8137-47db-b2fd-7bc5c903a1af" config-ref="HTTP_Listener_config" path="test"/>
+		<logger level="INFO" doc:name="Logger" doc:id="95de153c-c3af-458b-bafc-30b323585c1b" message="Flow Started."/>
+		<ee:transform doc:name="Transform Message" doc:id="310f5729-cdcf-4354-af2f-d489b6babed7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[
+	{
+		region : "us" ,
+		task : "get the total"
+			},
+	{
+		region : "europe" ,
+		task : "get the total"
+	},
+	{
+		region : "asia" ,
+		task : "get the total"
+	}
+]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<parallel-foreach doc:name="Parallel For Each" doc:id="61293ad2-a94b-4581-9f02-bd7776e7fc3e" >
+			<logger level="INFO" doc:name="Logger" doc:id="ddc27795-aeb5-4ddb-a38a-622b6844d855" message="#[payload]"/>
+			<choice doc:name="Choice" doc:id="9f14427e-ea49-4b9a-93d2-6a88b1767c25" >
+				<when expression='#[payload.region == "us"]'>
+					<ee:transform doc:name="Transform Message" doc:id="b21a6306-f7e3-407c-913a-616194fda508" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"total sale US region" : "2000"
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</when>
+				<when expression='#[payload.region == "europe"]'>
+					<ee:transform doc:name="Transform Message" doc:id="5473bb93-a4e5-4c13-a9ea-eb6c6f2a7f8c" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"total sale Europe region" : "4000"
+	
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</when>
+				<otherwise >
+					<ee:transform doc:name="Transform Message" doc:id="dd553a6a-069c-4f61-931f-92504f9a06a0" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"total sale asia region" : "9000"
+}
+]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</otherwise>
+			</choice>
+		</parallel-foreach>
+		<ee:transform doc:name="Transform Message" doc:id="1edb818e-d68d-4dc0-b879-124aadf91efd" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="501d2144-6a99-4fa0-a48b-83a4b8e43131" message="#[payload]"/>
+	</flow>
+</mule>
